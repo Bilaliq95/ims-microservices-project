@@ -1,0 +1,61 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend:/app
+    environment:
+      - FRONTEND_PORT=3001
+    depends_on:
+      - auth-service
+      - product-service
+
+  auth-service:
+    build:
+      context: ./auth-service
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./auth-service:/app       # 👈 Add this line
+    env_file:
+      - ./auth-service/.env
+    depends_on:
+      - auth-db
+
+  auth-db:
+    image: postgres:13
+    container_name: auth-db
+    env_file:
+      - ./auth-db.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+  product-service:
+    build:
+      context: ./product-service
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./product-service:/app    # 👈 Optional: add if you want live updates in product-service too
+    env_file:
+      - ./product-service/.env
+    depends_on:
+      - products-db
+
+  products-db:
+    image: postgres:13
+    container_name: products-db
+    env_file:
+      - ./products-db.env
+    ports:
+      - "5433:5432"
+    volumes:
+      - products_db_data:/var/lib/postgresql/data
+
+volumes:
+  auth_db_data:
+  products_db_data:

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+</head>
+<body>
+<h1>Your Order Summary</h1>
+
+<% if (cart.length === 0) { %>
+    <p>Your cart is empty.</p>
+<% } else { %>
+    <table>
+        <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% cart.forEach(item => { %>
+            <tr>
+                <td><%= item.product_name %></td> <!-- Display the product name -->
+                <td>
+                    <form action="/cart/update/<%= item.productId %>" method="POST">
+                        <input type="number" name="quantity" value="<%= item.quantity %>" min="1" required>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+                <td>
+                    <% if (typeof item.product_price === 'number' && !isNaN(item.product_price)) { %>
+                        <%= item.product_price.toFixed(2) %> <!-- Display the product price -->
+                    <% } else { %>
+                        N/A
+                    <% } %>
+                </td>
+                <td>
+                    <% if (typeof item.product_price === 'number' && !isNaN(item.product_price)) { %>
+                        <%= (item.product_price * item.quantity).toFixed(2) %> <!-- Calculate the total for this item -->
+                    <% } else { %>
+                        N/A
+                    <% } %>
+                </td>
+                <td>
+                    <form action="/cart/remove/<%= item.productId %>" method="POST">
+                        <button type="submit">Remove</button>
+                    </form>
+                </td>
+            </tr>
+        <% }) %>
+        </tbody>
+    </table>
+
+    <h3>Total: $<%= cart.reduce((total, item) => total + (typeof item.product_price === 'number' && !isNaN(item.product_price) ? item.product_price * item.quantity : 0), 0).toFixed(2) %></h3> <!-- Calculate the total cart value -->
+
+    <!-- Confirm Order Button -->
+    <form action="/cart/confirm" method="POST">
+        <button type="submit" class="btn btn-success">Confirm Order</button>
+    </form>
+<% } %>
+
+<a href="/home">Continue Shopping</a>
+</body>
+</html>

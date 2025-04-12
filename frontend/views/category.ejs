@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>CIS - CAN-INDIA SALES</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link rel="stylesheet"  href="/css/vendor.css">
+    <link rel="stylesheet"  href="/css/home.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Open+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+<div class="container py-5">
+    <h2>Products in <%= categoryName %> Category</h2>
+    <div class="row" id="products-list">
+        <!-- Products will be loaded here via Ajax -->
+    </div>
+</div>
+<!-- jQuery CDN (Make sure this is included) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const productServiceBaseUrl = 'http://localhost:3002';
+
+    $(document).ready(function() {
+        const category = '<%= categoryName %>'; // Get the category name from EJS
+        fetchProducts(category); // Call function to fetch products
+
+        function fetchProducts(category) {
+            // Use fetch API instead of $.ajax
+            fetch(`${productServiceBaseUrl}/products/category/${category}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json(); // Parse JSON from the response
+                })
+                .then(products => {
+                    // Clear existing content
+                    $('#products-list').empty();
+
+                    // Iterate over the products and append them to the product container
+                    products.forEach(product => {
+                        const productHTML = `
+                            <div class="col-md-4 mb-4">
+                                <div class="product-item">
+                                    <figure>
+                                        <a href="index.html" title="${product.product_name}">
+                                            <img src="${product.image_url || '/images/default-product.jpg'}" alt="${product.product_name}" class="tab-image">
+                                        </a>
+                                    </figure>
+                                    <div class="d-flex flex-column text-center">
+                                        <h3 class="fs-6 fw-normal">${product.product_name}</h3>
+                                        <div>
+                                            <span class="rating">
+                                                <!-- Dynamically add star ratings -->
+                                                ${[...Array(5)].map((_, i) => `
+                                                    <svg width="18" height="18" class="${i < product.rating ? 'text-warning' : 'text-muted'}">
+                                                        <use xlink:href="#star-full"></use>
+                                                    </svg>
+                                                `).join('')}
+                                            </span>
+                                            <span>(${product.rating_count || 0})</span>
+                                        </div>
+                                        <div class="d-flex justify-content-center align-items-center gap-2">
+                                            <del>${product.old_price ? '$' + product.old_price : ''}</del>
+                                            <span class="text-dark fw-semibold">$${product.product_price}</span>
+                                            ${product.discount ? `<span class="badge border border-dark-subtle rounded-0 fw-normal px-1 fs-7 lh-1 text-body-tertiary">${product.discount} OFF</span>` : ''}
+                                        </div>
+                                        <div class="button-area p-3 pt-0">
+                                            <div class="row g-1 mt-2">
+                                                <div class="col-3">
+                                                    <input type="number" name="quantity" class="form-control border-dark-subtle input-number quantity" value="1">
+                                                </div>
+                                                <div class="col-7">
+                                                    <form action="/cart/add-to-cart/${product.product_id}" method="POST">
+                                                        <input type="number" name="quantity" value="1" min="1" class="d-none" required>
+                                                        <button type="submit" class="btn btn-primary rounded-1 p-2 fs-7 btn-cart">
+                                                            <svg width="18" height="18">
+                                                                <use xlink:href="#cart"></use>
+                                                            </svg> Add to Cart
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                                <div class="col-2">
+                                                    <a href="#" class="btn btn-outline-dark rounded-1 p-2 fs-6">
+                                                        <svg width="18" height="18">
+                                                            <use xlink:href="#heart"></use>
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        $('#products-list').append(productHTML); // Append each product to the container
+                    });
+                })
+                .catch(err => {
+                    console.error('Error loading products:', err);
+                    $('#products-list').html('<p>Sorry, we couldn’t load the products.</p>');
+                });
+        }
+    });
+</script>
+
+</body>
+</html>
