@@ -27,7 +27,3 @@ jobs:
         docker build -t miqbal38/ims-app-microservices-auth-service:latest .
         docker push miqbal38/ims-app-microservices-auth-service:latest
 
-#    - name: Deploy to Kubernetes
-#      run: |
-#        kubectl apply -f auth-service/k8s/
-
